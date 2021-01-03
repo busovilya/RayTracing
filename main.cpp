@@ -27,32 +27,32 @@ int main()
 
 void render(std::vector<Sphere> spheres, std::vector<Light> lights)
 {
-    const int width_img = 640;
-    const int height_img = 480;
-    const float viewport_width = 2;
-    const float viewport_height = 2;
+    const int IMG_WIDTH = 640;
+    const int IMG_HEIGHT = 480;
+    const float VIEWPORT_WIDTH = 2;
+    const float VIEWPORT_HEIGHT = 2;
     Vector3f lower_left_corner { -1, -1, 1 };
-    std::vector<Vector3f> buffer(width_img * height_img);
+    std::vector<Vector3f> buffer(IMG_WIDTH * IMG_HEIGHT);
     
     Vector3f camera{0, 0, 0};
 
-    for (int i = 0; i < width_img; i++)
-        for (int j = 0; j < height_img; j++)
+    for (int i = 0; i < IMG_WIDTH; i++)
+        for (int j = 0; j < IMG_HEIGHT; j++)
         {
-            Vector3f ray_direction{double(i) / width_img * viewport_width,
-                                   double(j) / height_img * viewport_height,
+            Vector3f ray_direction{float(i) / IMG_WIDTH * VIEWPORT_WIDTH,
+                                   float(j) / IMG_HEIGHT * VIEWPORT_HEIGHT,
                                    0};
             ray_direction = ray_direction + lower_left_corner;
-            buffer[j * width_img + i] = cast_ray(camera, ray_direction, spheres, lights);           
+            buffer[j * IMG_WIDTH + i] = cast_ray(camera, ray_direction, spheres, lights);           
         }
         
     std::ofstream out("output.ppm");
     out << "P3\n";
-    out << width_img << ' ' << height_img << "\n255\n";
+    out << IMG_WIDTH << ' ' << IMG_HEIGHT << "\n255\n";
 
-    for (int i = 0; i < height_img; i++)
-        for (int j = 0; j < width_img; j++)
-            out << int(buffer[i * width_img + j].x) << ' ' << int(buffer[i * width_img + j].y) << ' ' << int(buffer[i * width_img + j].z) << '\n';
+    for (int i = 0; i < IMG_HEIGHT; i++)
+        for (int j = 0; j < IMG_WIDTH; j++)
+            out << int(buffer[i * IMG_WIDTH + j].x) << ' ' << int(buffer[i * IMG_WIDTH + j].y) << ' ' << int(buffer[i * IMG_WIDTH + j].z) << '\n';
 
     out.close();
 }
