@@ -4,13 +4,14 @@
 
 #include "light.h"
 #include "sphere.h"
+#include "camera.h"
 
 #define RED     Vector3f { 255, 0, 0 }
 #define GREEN   Vector3f { 0, 255, 0 }
 #define BLUE    Vector3f { 0, 0, 255 }
 
 void render(std::vector<Sphere> spheres, std::vector<Light> lights);
-Vector3f cast_ray(Vector3f origin, Vector3f directrion, std::vector<Sphere> spheres, std::vector<Light> lights);
+Vector3f cast_ray(Ray ray, std::vector<Sphere> spheres, std::vector<Light> lights);
 
 int main()
 {
@@ -33,17 +34,14 @@ void render(std::vector<Sphere> spheres, std::vector<Light> lights)
     const float VIEWPORT_HEIGHT = 2;
     Vector3f lower_left_corner { -1, -1, 1 };
     std::vector<Vector3f> buffer(IMG_WIDTH * IMG_HEIGHT);
-    
-    Vector3f camera{0, 0, 0};
+
+    Camera camera(Vector3f {0, 0, 0}, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, lower_left_corner);
 
     for (int i = 0; i < IMG_WIDTH; i++)
         for (int j = 0; j < IMG_HEIGHT; j++)
         {
-            Vector3f ray_direction{float(i) / IMG_WIDTH * VIEWPORT_WIDTH,
-                                   float(j) / IMG_HEIGHT * VIEWPORT_HEIGHT,
-                                   0};
-            ray_direction = ray_direction + lower_left_corner;
-            buffer[j * IMG_WIDTH + i] = cast_ray(camera, ray_direction, spheres, lights);           
+            Ray ray = camera.getRay(float(i) / IMG_WIDTH, float(j) / IMG_HEIGHT);
+            buffer[j * IMG_WIDTH + i] = cast_ray(ray, spheres, lights);           
         }
         
     std::ofstream out("output.ppm");
@@ -57,19 +55,19 @@ void render(std::vector<Sphere> spheres, std::vector<Light> lights)
     out.close();
 }
 
-Vector3f cast_ray(Vector3f origin, Vector3f directrion, std::vector<Sphere> spheres, std::vector<Light> lights)
+Vector3f cast_ray(Ray ray, std::vector<Sphere> spheres, std::vector<Light> lights)
 {
     for(Sphere& sphere: spheres)
     {
         float dist;
-        if (sphere.intersect(origin, directrion, dist))
+        if (sphere.intersect(ray, dist))
         {
             float diffuse_intensity = 0.0f;
             for(Light light: lights)
             {
                 Vector3f light_dir = (light.position - sphere.center).unit();
-                Vector3f intersection_point = origin + directrion.unit() * dist;
-                Vector3f normal_vec = (intersection_point - (sphere.center - origin)).unit();
+                Vector3f intersection_point = ray.origin + ray.direction.unit() * dist;
+                Vector3f normal_vec = (intersection_point - (sphere.center - ray.origin)).unit();
                 diffuse_intensity += light.intensity * std::max(0.0f, light_dir * normal_vec);
             }
 

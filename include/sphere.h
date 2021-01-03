@@ -1,4 +1,7 @@
+#pragma once
+
 #include "geometry.h"
+#include "ray.h"
 
 struct Sphere
 {
@@ -6,5 +9,5 @@ struct Sphere
     float radius;
     Vector3f color;
 
-    bool intersect(const Vector3f& origin, const Vector3f& ray, float& intersect_dist);
+    bool intersect(const Ray& ray, float& intersect_dist);
 };
